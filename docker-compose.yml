@@ -1,0 +1,58 @@
+services:
+  nginx-proxy:
+    image: nginx
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - korp-network
+    depends_on:
+      - http-server-projeto-korp
+      - nginx-exporter
+      - prometheus
+      - grafana
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    command:
+      - "--nginx.scrape-uri=http://nginx-proxy:8081/status"
+    networks:
+      - korp-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    networks:
+      - korp-network
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - nginx-exporter
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    user: "0"
+    networks:
+      - korp-network
+    volumes:
+      - ./grafana/grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  http-server-projeto-korp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: http-server-projeto-korp
+    networks:
+      - korp-network
+    restart: unless-stopped
+
+networks:
+  korp-network:
+    driver: bridge

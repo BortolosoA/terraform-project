@@ -1,0 +1,5 @@
+---
+# Playbook principal: provisiona o Projeto Korp completo.
+# A VM já sobe com o usuário ubuntu configurado via cloud-init (Terraform),
+# então não é mais necessário nenhum play de bootstrap como root.
+- import_playbook: korp.yml

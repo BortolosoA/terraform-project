@@ -1,0 +1,155 @@
+---
+- name: Provisionar Projeto Korp
+  hosts: korp
+  become: true
+  gather_facts: true
+
+  vars:
+    docker_packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+
+  tasks:
+
+    # ---------------------------------------------------------
+    # Sistema
+    # ---------------------------------------------------------
+
+    - name: Atualizar cache do APT
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Instalar dependências do sistema
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+          - gnupg
+        state: present
+
+    # ---------------------------------------------------------
+    # Docker
+    # ---------------------------------------------------------
+
+    - name: Baixar e instalar o Docker via script oficial
+      ansible.builtin.shell: curl -fsSL https://get.docker.com | sh
+      args:
+        creates: /usr/bin/docker
+
+    # ---------------------------------------------------------
+    # Usuário
+    # ---------------------------------------------------------
+
+    - name: Adicionar usuário ao grupo docker
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    # ---------------------------------------------------------
+    # Projeto
+    # ---------------------------------------------------------
+
+    - name: Criar diretório do projeto
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Baixar projeto
+      ansible.builtin.git:
+        repo: "{{ repository_url }}"
+        dest: "{{ project_dir }}"
+        version: "{{ repository_branch }}"
+        update: true
+        force: false
+
+    # ---------------------------------------------------------
+    # Rede Docker
+    # ---------------------------------------------------------
+
+    - name: Criar rede Docker
+      community.docker.docker_network:
+        name: "{{ docker_network }}"
+        driver: bridge
+        state: present
+
+    # ---------------------------------------------------------
+    # NGINX
+    # ---------------------------------------------------------
+
+    - name: Garantir diretório do NGINX
+      ansible.builtin.file:
+        path: "{{ project_dir }}/nginx/conf.d"
+        state: directory
+        mode: "0755"
+
+    - name: Configurar proxy reverso NGINX
+      ansible.builtin.template:
+        src: templates/http-server-projeto-korp.conf.j2
+        dest: "{{ project_dir }}/nginx/conf.d/http-server-projeto-korp.conf"
+        mode: "0644"
+
+    # ---------------------------------------------------------
+    # Prometheus
+    # ---------------------------------------------------------
+
+    - name: Garantir diretório do Prometheus
+      ansible.builtin.file:
+        path: "{{ project_dir }}/prometheus"
+        state: directory
+        mode: "0755"
+
+    # ---------------------------------------------------------
+    # Compose
+    # ---------------------------------------------------------
+
+    - name: Construir imagem da aplicação
+      community.docker.docker_image:
+        name: "{{ app_container }}"
+        build:
+          path: "{{ project_dir }}/app"
+          dockerfile: Dockerfile
+        source: build
+        force_source: true
+
+    - name: Subir stack Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ project_dir }}"
+        state: present
+        build: always
+        recreate: auto
+        remove_orphans: true
+
+    # ---------------------------------------------------------
+    # Validação
+    # ---------------------------------------------------------
+
+    - name: Aguardar NGINX ficar disponível
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ nginx_port }}"
+        delay: 2
+        timeout: 60
+
+    - name: Testar API Projeto Korp
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ nginx_port }}/projeto-korp"
+        method: GET
+        return_content: true
+        status_code: 200
+      register: api_response
+      retries: 10
+      delay: 3
+      until: api_response.status == 200
+
+    - name: Exibir resposta da API
+      ansible.builtin.debug:
+        msg:
+          - "HTTP Status: {{ api_response.status }}"
+          - "Resposta: {{ api_response.content }}"
