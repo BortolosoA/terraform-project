@@ -17,3 +17,13 @@ module "ec2" {
   instance_name     = "Projeto-Korp"
   key_name          = var.key_name
 }
+resource "local_file" "ansible_inventory" {
+  # O conteudo que sera escrito no arquivo
+  content = <<-EOF
+    [korp]
+    ${module.ec2.public_ip}
+  EOF
+
+  # O caminho onde o Terraform vai salvar o arquivo (ajuste conforme suas pastas)
+  filename = "${path.module}/../ansible/inventory/inventory.ini"
+}
