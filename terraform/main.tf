@@ -3,9 +3,40 @@ provider "aws" {
 }
 
 # Chamada do modulo de Security Group
-module "security_group" {
-  source  = "./modules/security_group"
-  sg_name = "meu_sg_app"
+resource "aws_security_group" "sg_korp" {
+  name        = "korp-sg"
+  description = "Security group para projeto Korp"
+
+  # Porta do NGINX
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Porta do Grafana
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Porta do Prometheus
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 # Chamada do modulo de EC2
@@ -21,7 +52,7 @@ resource "local_file" "ansible_inventory" {
   # O conteudo que sera escrito no arquivo
   content = <<-EOF
     [korp]
-    ${module.ec2.public_ip}
+    svr-01 ansible_host=${module.ec2.public_ip}
   EOF
 
   # O caminho onde o Terraform vai salvar o arquivo (ajuste conforme suas pastas)

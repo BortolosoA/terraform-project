@@ -13,7 +13,6 @@
       - docker-compose-plugin
 
   tasks:
-
     # ---------------------------------------------------------
     # Sistema
     # ---------------------------------------------------------
@@ -109,20 +108,11 @@
     # Compose
     # ---------------------------------------------------------
 
-    - name: Construir imagem da aplicação
-      community.docker.docker_image:
-        name: "{{ app_container }}"
-        build:
-          path: "{{ project_dir }}/app"
-          dockerfile: Dockerfile
-        source: build
-        force_source: true
-
     - name: Subir stack Docker Compose
       community.docker.docker_compose_v2:
         project_src: "{{ project_dir }}"
         state: present
-        build: always
+        build: policy
         recreate: auto
         remove_orphans: true
 
@@ -132,14 +122,14 @@
 
     - name: Aguardar NGINX ficar disponível
       ansible.builtin.wait_for:
-        host: 127.0.0.1
+        host: "{{ ansible_host }}"
         port: "{{ nginx_port }}"
         delay: 2
         timeout: 60
 
     - name: Testar API Projeto Korp
       ansible.builtin.uri:
-        url: "http://127.0.0.1:{{ nginx_port }}/projeto-korp"
+        url: "http://{{ ansible_host }}:{{ nginx_port }}/projeto-korp"
         method: GET
         return_content: true
         status_code: 200

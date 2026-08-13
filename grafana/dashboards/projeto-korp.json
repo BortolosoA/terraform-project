@@ -1,0 +1,263 @@
+{
+  "kind": "Dashboard",
+  "apiVersion": "dashboard.grafana.app/v2",
+  "metadata": {
+    "name": "projeto-korp"
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "builtIn": true,
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "query": {
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "group": "grafana",
+            "kind": "DataQuery",
+            "spec": {},
+            "version": "v0"
+          }
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "Prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "builder",
+                        "expr": "up",
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "Prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "time() - process_start_time_seconds",
+                        "instant": false,
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "Prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "builder",
+                        "expr": "http_requests_total",
+                        "instant": false,
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "Prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "builder",
+                        "expr": "promhttp_metric_handler_requests_total{code=\"500\"}",
+                        "instant": false,
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "D"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 3,
+          "links": [],
+          "title": "Aplication",
+          "vizConfig": {
+            "group": "gapit-htmlgraphics-panel",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "SVGBaseFix": true,
+                "add100Percentage": true,
+                "calcsMutation": "standard",
+                "centerAlignContent": true,
+                "codeData": "{\n  \"text\": \"Random text\"\n}",
+                "css": ".status-card { padding:0 18px; font-family:'Segoe UI', Arial, sans-serif; color:#fff; }\n.row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #2a2d34; font-size:14px; }\n.row:last-child { border-bottom:none; }\n.k { color:#9aa0a6; }\n.v { font-weight:600; }\n.v.ok { color:#2ecc71; }\n.v.bad { color:#e74c3c; }",
+                "dynamicData": false,
+                "dynamicFieldDisplayValues": false,
+                "dynamicHtmlGraphics": false,
+                "dynamicProps": false,
+                "html": "<div class=\"status-card\">\n  <div class=\"row\">\n    <span class=\"k\">Status</span>\n    <span id=\"p3-status\" class=\"v\">--</span>\n  </div>\n  <div class=\"row\">\n    <span class=\"k\">Scrape Time</span>\n    <span id=\"p3-uptime\" class=\"v\">--</span>\n  </div>\n  <div class=\"row\">\n    <span class=\"k\">Requisicoes</span>\n    <span id=\"p3-rate\" class=\"v\">--</span>\n  </div>\n  <div class=\"row\">\n    <span class=\"k\">Taxa de erro (5xx)</span>\n    <span id=\"p3-error\" class=\"v\">--</span>\n  </div>\n</div>",
+                "onInit": "",
+                "onInitOnResize": false,
+                "onRender": "function lastValue(refId) {\n  const serie = (data.series || []).find((s) => s.refId === refId);\n  if (!serie) return null;\n  const field = serie.fields[1];\n  const idx = field.values.length - 1;\n  return idx >= 0 ? field.values.get(idx) : null;\n}\n\nfunction firstValue() {\n  const serie = (data.series || []).find((s) => s.name && s.name.includes('process_start'));\n  if (!serie) return null;\n  const field = serie.fields.find(f => f.type === 'number') || serie.fields[1];\n  if (!field || !field.values || field.values.length === 0) return null;\n  const idx = field.values.length - 1;\n  return typeof field.values.get === 'function' \n    ? field.values.get(idx) \n    : field.values[idx];\n}\n\nconst upVal = lastValue('A');\nconst uptimeStart = firstValue();\nconst rateVal = lastValue('C');\nconst errVal = lastValue('D');\n\nconst statusEl = htmlNode.getElementById('p3-status');\nconst uptimeEl = htmlNode.getElementById('p3-uptime');\nconst rateEl = htmlNode.getElementById('p3-rate');\nconst errorEl = htmlNode.getElementById('p3-error');\n\nif (upVal === 1) {\n  statusEl.textContent = 'ONLINE';\n  statusEl.className = 'v ok';\n} else {\n  statusEl.textContent = 'OFFLINE';\n  statusEl.className = 'v bad';\n}\n\nif (uptimeStart != null && !isNaN(uptimeStart)) {\n  const startSeconds = Number(uptimeStart);\n  const seconds = Math.max(0, (Date.now() / 1000) - startSeconds);\n  const h = Math.floor(seconds / 3600);\n  const m = Math.floor((seconds % 3600) / 60);\n  const formattedM = m.toString().padStart(2, '0');\n  uptimeEl.textContent = `${h}h ${formattedM}min`;\n} else {\n  uptimeEl.textContent = 'N/D';\n}\nrateEl.textContent = rateVal != null ? rateVal : 'N/D';\n\nif (errVal != null) {\n  const pct = rateVal ? (errVal / rateVal) * 100 : 0;\n  errorEl.textContent = pct.toFixed(2) + ' %';\n  errorEl.className = pct > 5 ? 'v bad' : 'v ok';\n} else {\n  errorEl.textContent = 'N/D';\n}",
+                "overflow": "visible",
+                "panelupdateOnMount": true,
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull",
+                    "last",
+                    "firstNotNull",
+                    "first",
+                    "min",
+                    "max",
+                    "mean",
+                    "sum",
+                    "count",
+                    "range",
+                    "delta",
+                    "step",
+                    "diff",
+                    "logmin",
+                    "allIsZero",
+                    "allIsNull",
+                    "diffperc"
+                  ]
+                },
+                "renderOnMount": true,
+                "rootCSS": "",
+                "useGrafanaScrollbar": true
+              }
+            },
+            "version": "2.2.3"
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              },
+              "height": 6,
+              "width": 10,
+              "x": 1,
+              "y": 0
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preferences": {
+      "layout": {
+        "kind": "GridLayout",
+        "spec": {
+          "items": []
+        }
+      }
+    },
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "fiscalYearStartMonth": 0,
+      "from": "now-6h",
+      "hideTimepicker": false,
+      "timezone": "browser",
+      "to": "now"
+    },
+    "title": "Projeto-Korp",
+    "variables": []
+  }
+}

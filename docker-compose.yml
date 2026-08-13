@@ -17,6 +17,8 @@ services:
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     container_name: nginx-exporter
+    ports:
+      - "9113:9113"
     command:
       - "--nginx.scrape-uri=http://nginx-proxy:8081/status"
     networks:
@@ -25,6 +27,8 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    ports:
+      - "9090:9090"
     networks:
       - korp-network
     volumes:
@@ -36,11 +40,14 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     user: "0"
+    ports:
+      - "3000:3000"
     networks:
       - korp-network
     volumes:
       - ./grafana/grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
 

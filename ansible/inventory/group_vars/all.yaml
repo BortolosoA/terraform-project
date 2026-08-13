@@ -9,10 +9,7 @@ prometheus_container: prometheus
 grafana_container: grafana
 nginx_exporter_container: nginx-exporter
 
-app_port: 8080
 nginx_port: 80
-prometheus_port: 9090
-grafana_port: 3000
 
-repository_url: "https://github.com/BortolosoA/projeto-korp.git"
+repository_url: "https://github.com/BortolosoA/terraform-project.git"
 repository_branch: main
