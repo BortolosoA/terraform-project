@@ -3,40 +3,9 @@ provider "aws" {
 }
 
 # Chamada do modulo de Security Group
-resource "aws_security_group" "sg_korp" {
-  name        = "korp-sg"
-  description = "Security group para projeto Korp"
-
-  # Porta do NGINX
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Porta do Grafana
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Porta do Prometheus
-  ingress {
-    from_port   = 9090
-    to_port     = 9090
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+module "security_group" {
+  source  = "./modules/security_group"
+  sg_name = "meu_sg_app"
 }
 
 # Chamada do modulo de EC2
