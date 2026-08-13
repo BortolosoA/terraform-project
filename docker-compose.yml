@@ -46,7 +46,7 @@ services:
 
   http-server-projeto-korp:
     build:
-      context: .
+      context: ./app
       dockerfile: Dockerfile
     container_name: http-server-projeto-korp
     networks:
